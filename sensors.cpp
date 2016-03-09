@@ -34,12 +34,15 @@ bool sensors::check_sensors(int sensor_num)
 {
    Serial.println("check_sensors(void)");
    uint8_t tmpreg;
+   
+   
    bmi055.I2C_ReadnByte(BMI055_ACC_ADDR, ACC_CHIPID, 1, &tmpreg);
    if(tmpreg == 0x3E)
    {
      Serial.print("acc chip id: 0x"+ String(tmpreg) + "\n");
      return 1;
    }
+   
    delay(10);
    return 0;
   // bmi055.BMI055_ReadSensor(&acc_x, &acc_y, &acc_z, &gyo_x, &gyo_y, &gyo_z);

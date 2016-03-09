@@ -51,11 +51,21 @@ bool phone_call::SIM_init()
   return 0;
 }
 
-bool phone_call::SIM_send(char *sms_num,char *sms_context)
+bool phone_call::SIM_send(String sms_num,char *sms_context)
 {
   /****************Make Voice Call*********************/
-  LSMS.beginSMS(sms_num);
+  char *number;
+  sms_num.toCharArray(number, 11);
+  const char * rnumber=number;
+  
+  
+  LSMS.beginSMS(rnumber);
   LSMS.print(sms_context);
   return LSMS.endSMS();
 }
+/*
+int phone_call::answerCall()
+{
 
+
+}*/

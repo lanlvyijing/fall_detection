@@ -3,8 +3,10 @@
 #include "scene_judgment.h"
 #include "monitor_signal.h"
 #include "ble_s.h"
-#include "phone_call.h"
+#include "BMI055_I2C.h"
 #include "GY85_I2C.h"
+#include "file_sys.h"
+
 /****************************初始化**************************************/
 uint8_t check_flag = 0;
 set_init Set_Init;
@@ -24,11 +26,11 @@ bool buttonState1 = 0;         // variable for reading the pushbutton status
 bool buttonState2 = 0;         // variable for reading the pushbutton status
 char pushtime = 0;
 /************************************************************************/
-
 ble_s Ble_SS;
 GY85_I2C gy85_i2c;
+BMI055_I2C bmi055_main;
+file_sys filesys;
 /******************************按键处理函数******************************/
-
 void Two_button_pushed();
 void button1_push();
 void button2_push();
@@ -38,18 +40,32 @@ void check_exit_call();
 void BLE_phone();
 phone_call Phone_Call;
 /************************************************************************/
+short calibData[6];
+short readouts[6];
+/***********************************************************************/
 void setup() {
   // put your setup code here, to run once:
    
   char check_flag=0;
+  delay(4000);
+  Wire.begin();
   Serial.begin(9600);
-  delay(3000);
+  
+  delay(1000);
+
+   bmi055_main.bmi055_init();  
+   bmi055_main.Calibration(calibData);
+   filesys.reinitial_file();
+ 
+  /*
   gy85_i2c.Init_ITG3205();
   gy85_i2c.Init_ADXL345();
- /*
+ */
+  /*
   Serial.println("*************************set_init_check(void)************************************");
   check_flag = Set_Init.set_init_check();
   Ble_SS.ble_s_init();
+  
   while(check_flag)
   {
     Serial.println("*************************set_init_check(void)************************************");
@@ -59,13 +75,27 @@ void setup() {
   //init button pin
   pinMode(buttonPin1, INPUT_PULLUP);
   pinMode(buttonPin2, INPUT_PULLUP);
- */
+   */
 }
 
 void loop() {
-  delay(1000);
-  gy85_i2c.READ_ITG3205();
- 
+  
+  short readouts[bmi055_main.nValCnt];
+  float realVals[6];
+  
+  bmi055_main.ReadAccGyr(readouts); //读出测量值  
+  bmi055_main.Rectify(readouts, realVals, calibData); //根据校准的偏移量进行纠正
+  /*
+  Serial.println("ACC_X: "+String(realVals[0]));
+  Serial.println("ACC_Y: "+String(realVals[1]));
+  Serial.println("ACC_Z: "+String(realVals[2]));
+  Serial.println("GYO_X: "+String(realVals[3]));
+  Serial.println("GYO_Y: "+String(realVals[4]));
+  Serial.println("GYO_Z: "+String(realVals[5]));*/
+  filesys.save_accgyo_file(realVals);
+  delay(100);
+  /*
+  gy85_i2c.READ_ITG3205(); 
   gy85_i2c.read_ADXL345();
   gy85_i2c.Send_ADXL345();
   gy85_i2c.Q=gy85_i2c.Q/(float)1000;
@@ -73,6 +103,7 @@ void loop() {
   gy85_i2c.K=gy85_i2c.K/(float)1000;
   gy85_i2c.gg = sqrt(gy85_i2c.Q*gy85_i2c.Q+gy85_i2c.T*gy85_i2c.T+gy85_i2c.K*gy85_i2c.K);
   gy85_i2c.conversion(gy85_i2c.gg*1000);          //转换出显示需要的数据
+  */
   /*
     if(counting--)
     {
@@ -91,13 +122,16 @@ void loop() {
     
     Serial.println("************************* check_botton_stat ************************************");
     check_botton_stat();  
-    delay(10);*/
+    delay(10);
+    */
 }
 
 
 void button1_push()
 { 
   int count=0;
+  char try_sms_time; 
+  bool sms_send_flag;
     Serial.println("[button1_push] button1 pushed, call for help");
     stop_call_help = 1;
     while(stop_call_help)
@@ -105,7 +139,15 @@ void button1_push()
       if(count>200)
       {
         count=0;
-        Phone_Call.make_call_to(test_num);
+        try_sms_time=0;
+        sms_send_flag=0;
+        while((sms_send_flag!=1)&&(try_sms_time<5))
+        {
+          sms_send_flag=Phone_Call.SIM_send(test_num,test_sim_string);
+          //LSMS.print(test_num);
+          delay(1000);
+          try_sms_time++;
+        }
       }
       check_exit_call();
       count++;
@@ -144,6 +186,7 @@ void Two_button_pushed_short()
     if(stop_call_aid)
     {
       stop_call_aid=0;
+      Phone_Call.hang_call();
     }
     delay(500);
 }

@@ -3,6 +3,7 @@
 
 #include <inttypes.h>
 #include "Arduino.h"
+#include "phone_call.h"
 
   extern  float acc_x;
   extern  float acc_y;
@@ -24,6 +25,7 @@
   extern  String buff_user_2nd_contacts_num;   //11
   extern  String buff_user_medicine_time;      //6
   extern  String test_num;
+  extern  char test_sim_string[];
   /*****************************************************************/
   extern  bool stop_call_help;
   extern  bool stop_call_aid;

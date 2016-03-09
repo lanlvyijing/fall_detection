@@ -27,6 +27,7 @@ real_time Real_Time;
 user_info User_Info;
 /***************GSM*************************/
 gsm_gprs GSM_GPRS;
+phone_call phonecall;
 /**************BlueTooth***********************/
 ble_c Ble_C;
 ble_s Ble_S;
@@ -101,6 +102,14 @@ uint8_t set_init::set_init_check(void)
      check_flag=6;
      return check_flag;
    } 
+    /*****************check SIM card*****************/
+   Serial.println("*********************Bat_Monitor.bat_check************************");
+   if(phonecall.SIM_init())
+   {
+       Serial.println("check your SIM card");
+       check_flag=7;
+       return check_flag;
+   }
    return check_flag;
 }
 

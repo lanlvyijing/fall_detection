@@ -59,8 +59,15 @@ public:
         void BMI055_ReadSensor(float *ax, float *ay, float *az,float *gx, float *gy, float *gz);
         void DisplayBMI055Log(void);
         void bmi055_init(void);
+        void ReadAccGyr(short *pVals) ;
+        void Calibration(short *calibData);
+        void Rectify(short *pReadout, float *pRealVals,short *calibData);
+        static const int nValCnt; //一次读取寄存器的数量
 private:
 	static int ii;
+        
+        static const int nCalibTimes; //校准时读数的次数
+//        static short calibData[]; //校准数据
 };
 
 

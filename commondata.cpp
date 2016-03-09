@@ -22,6 +22,7 @@
        String buff_user_2nd_contacts_num = "";   //11
        String buff_user_medicine_time = "";      //6
        String test_num = "13882137772";   //11
+       char test_sim_string[]="calling for help ,pleases come quickly";
        
        bool stop_call_help = 0;
        bool stop_call_aid = 0;

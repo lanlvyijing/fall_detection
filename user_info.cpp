@@ -56,7 +56,7 @@ uint8_t user_info::read_user_info(void)
     else
     {
       read_info_flag = 0; 
-      //set_user_info(test_user_name, test_user_age, test_user_1st_contacts_name, test_user_1st_contacts_num, test_user_2nd_contacts_name, test_user_2nd_contacts_num, test_user_medicine_time);
+      save_user_info(test_user_name, test_user_age, test_user_1st_contacts_name, test_user_1st_contacts_num, test_user_2nd_contacts_name, test_user_2nd_contacts_num, test_user_medicine_time);
     }
     
     return read_info_flag;
@@ -88,13 +88,12 @@ void user_info::extract_info(String info)
      min_buf[1]=user_medicine_time[3];
      medicine_hour = atoi(hour_buf);
      medicine_min = atoi(min_buf);
-     Serial.println("user name is:"+user_name);
-     Serial.println("user age is:"+user_age);
-     Serial.println("user first contacts name is:"+user_1st_contacts_name);
-     Serial.println("user first contacts num is:"+user_1st_contacts_num);
-     Serial.println("user second contacts name is:"+user_2nd_contacts_name);
-     Serial.println("user second contacts num is:"+user_2nd_contacts_num); 
-     
+     Serial.println("user name is:"+buff_user_name);
+     Serial.println("user age is:"+buff_user_age);
+     Serial.println("user first contacts name is:"+buff_user_1st_contacts_name);
+     Serial.println("user first contacts num is:"+buff_user_1st_contacts_num);
+     Serial.println("user second contacts name is:"+buff_user_2nd_contacts_name);
+     Serial.println("user second contacts num is:"+buff_user_2nd_contacts_num);    
      Serial.println("medicine_hour is:"+medicine_hour); 
      Serial.println("medicine_min is:"+medicine_min);
 }
