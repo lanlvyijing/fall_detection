@@ -6,7 +6,7 @@
 #include "BMI055_I2C.h"
 #include "GY85_I2C.h"
 #include "file_sys.h"
-
+#include "fall_queue.h"
 /****************************初始化**************************************/
 uint8_t check_flag = 0;
 set_init Set_Init;
@@ -30,6 +30,7 @@ ble_s Ble_SS;
 GY85_I2C gy85_i2c;
 BMI055_I2C bmi055_main;
 file_sys filesys;
+//static fall_queue fallqueue;
 /******************************按键处理函数******************************/
 void Two_button_pushed();
 void button1_push();
@@ -39,9 +40,14 @@ void check_exit_call();
 /************************************************************************/
 void BLE_phone();
 phone_call Phone_Call;
+
+static fall_queue_t accx_queue;
+static fall_queue_t accm_queue;
+static fall_queue_t gyrm_queue;
 /************************************************************************/
-short calibData[6];
+
 short readouts[6];
+short queuedata[8];
 /***********************************************************************/
 void setup() {
   // put your setup code here, to run once:
@@ -56,7 +62,10 @@ void setup() {
    bmi055_main.bmi055_init();  
    bmi055_main.Calibration(calibData);
    filesys.reinitial_file();
- 
+   bmi055_main.ReadAccGyrforqueue(queuedata);
+   
+   init_fall_queue(queuedata,(void *)&accx_queue,(void *)&accm_queue,(void *)&gyrm_queue);
+   //Serial.println("fallqueue.fall_accx_queue:"+String(accx_queue.data_frame[0]));
   /*
   gy85_i2c.Init_ITG3205();
   gy85_i2c.Init_ADXL345();
@@ -81,18 +90,19 @@ void setup() {
 void loop() {
   
   short readouts[bmi055_main.nValCnt];
-  float realVals[6];
+  short realVals[8];
+  short fallfeature[8];
   
-  bmi055_main.ReadAccGyr(readouts); //读出测量值  
-  bmi055_main.Rectify(readouts, realVals, calibData); //根据校准的偏移量进行纠正
-  /*
+  bmi055_main.ReadAccGyrforqueue(realVals); //读出测量值  
+
+  get_fall_featrue(realVals,fallfeature,(void *)&accx_queue,(void *)&accm_queue,(void *)&gyrm_queue);
   Serial.println("ACC_X: "+String(realVals[0]));
   Serial.println("ACC_Y: "+String(realVals[1]));
   Serial.println("ACC_Z: "+String(realVals[2]));
-  Serial.println("GYO_X: "+String(realVals[3]));
-  Serial.println("GYO_Y: "+String(realVals[4]));
-  Serial.println("GYO_Z: "+String(realVals[5]));*/
-  filesys.save_accgyo_file(realVals);
+  Serial.println("GYO_X: "+String(realVals[4]));
+  Serial.println("GYO_Y: "+String(realVals[5]));
+  Serial.println("GYO_Z: "+String(realVals[6]));
+  //filesys.save_accgyo_file(realVals);
   delay(100);
   /*
   gy85_i2c.READ_ITG3205(); 

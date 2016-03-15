@@ -60,8 +60,9 @@ public:
         void DisplayBMI055Log(void);
         void bmi055_init(void);
         void ReadAccGyr(short *pVals) ;
+        void ReadAccGyrforqueue(short *pVals);
         void Calibration(short *calibData);
-        void Rectify(short *pReadout, float *pRealVals,short *calibData);
+        void Rectify(short *pReadout,short *pRealVals,short *calibData);
         static const int nValCnt; //一次读取寄存器的数量
 private:
 	static int ii;

@@ -156,6 +156,24 @@ void BMI055_I2C::ReadAccGyr(short *pVals)
   pVals[5] =  ((buf[5] << 8) | buf[4]);
 
 }
+void BMI055_I2C::ReadAccGyrforqueue(short *pVals)
+{
+  short buf[6];
+  ReadAccGyr(buf);
+  Rectify(buf, pVals, calibData);
+  Serial.println("ReadAccGyrforqueue");
+
+  pVals[3] = sqrt(buf[0]*buf[0]+buf[1]*buf[1]+buf[2]*buf[2]);
+ 
+  pVals[7] = sqrt(buf[3]*buf[3]+buf[4]*buf[4]+buf[5]*buf[5]);
+  Serial.println("[pVals] pVals ACC_X: " + String(pVals[0]));
+  Serial.println("[pVals] pVals ACC_Y: " + String(pVals[1]));
+  Serial.println("[pVals] pVals ACC_Z: " + String(pVals[2]));
+  Serial.println("[pVals] pVals GYO_X: " + String(pVals[4]));
+  Serial.println("[pVals] pVals GYO_Y: " + String(pVals[5]));
+  Serial.println("[pVals] pVals GYO_Z: " + String(pVals[6]));
+
+}
 
 void BMI055_I2C::I2C_WriteByte(uint8_t slv_add, uint8_t res_add, uint8_t w_data)
 {
@@ -212,6 +230,19 @@ void BMI055_I2C::Calibration(short* calibData)
   Serial.println("[Calibration] calibData GYO_Z: " + String(calibData[5]));
   delay(3000);
 }
+
+void BMI055_I2C::Rectify(short *pReadout,short *pRealVals, short *calibData) {
+  for (int i = 0; i < 3; ++i) {
+    //pRealVals[i] = (float)(pReadout[i] - calibData[i]) / 16384.0f;
+    pRealVals[i] = pReadout[i] - calibData[i];
+  }
+  // pRealVals[3] = pReadout[3] / 340.0f + 36.53;
+  for (int i = 3; i < 6; ++i) {
+    pRealVals[i+1] = pReadout[i] - calibData[i];
+  }
+}
+
+/* this is the real data of the acc and gyr
 void BMI055_I2C::Rectify(short *pReadout, float *pRealVals, short *calibData) {
   for (int i = 0; i < 3; ++i) {
     //pRealVals[i] = (float)(pReadout[i] - calibData[i]) / 16384.0f;
@@ -221,4 +252,5 @@ void BMI055_I2C::Rectify(short *pReadout, float *pRealVals, short *calibData) {
   for (int i = 3; i < 6; ++i) {
     pRealVals[i] = (float)(pReadout[i] - calibData[i]) / 16.4f;
   }
-}
+}*/
+

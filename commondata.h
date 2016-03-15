@@ -4,7 +4,7 @@
 #include <inttypes.h>
 #include "Arduino.h"
 #include "phone_call.h"
-
+  extern  short calibData[];
   extern  float acc_x;
   extern  float acc_y;
   extern  float acc_z;
